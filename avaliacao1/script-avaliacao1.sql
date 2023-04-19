@@ -39,21 +39,36 @@ GROUP BY lc.cd_localidade
 HAVING COUNT(*) > 1
 ORDER BY COUNT(*) DESC
 
--- d)
+-- d) OK
 
+WITH qry AS
+(
+	SELECT
+		lg.nm_logradouro                 AS nome_logradouro,
+		COUNT(DISTINCT lc.cd_localidade) AS qtd_localidades
+	FROM logradouro       AS lg
+	INNER JOIN localidade AS lc ON lg.cd_localidade = lc.cd_localidade
+	GROUP BY lg.nm_logradouro
+)
 
+SELECT * FROM qry
+WHERE qry.qtd_localidades = (SELECT MAX(qry.qtd_localidades) FROM qry)
 
--- e) Todo: uma ou mais localidades com maior qtd?
+-- e) OK
 
-SELECT
-	lc.cd_localidade AS codigo_localidade,
-	lc.nm_localidade AS nome_localidade,
-	lc.sg_uf         AS uf,
-	COUNT(*)         AS qtd_ceps_especiais
-FROM localidade           AS lc
-INNER JOIN grande_usuario AS gu ON lc.cd_localidade = gu.cd_localidade
-GROUP BY lc.cd_localidade
-ORDER BY COUNT(*) DESC
+WITH qry AS
+(
+	SELECT
+		lc.nm_localidade AS nome_localidade,
+		lc.sg_uf         AS uf,
+		COUNT(*)         AS qtd_ceps_especiais
+	FROM localidade           AS lc
+	INNER JOIN grande_usuario AS gu ON lc.cd_localidade = gu.cd_localidade
+	GROUP BY lc.cd_localidade
+)
+
+SELECT * FROM qry
+WHERE qry.qtd_ceps_especiais = (SELECT MAX(qry.qtd_ceps_especiais) FROM qry)
 
 -- f) OK
 
@@ -82,20 +97,34 @@ WITH qry AS
 SELECT * FROM qry
 WHERE qry.qtd = (SELECT MAX(qry.qtd) FROM qry)
 
--- h)
-
-
-
--- i) Todo: um ou mais logradouros com maior qtd?
+-- h) OK
 
 SELECT
-	lg.nm_logradouro AS nome_logradouro,
-	COUNT(*)         AS qtd_municipios
-FROM logradouro       AS lg
-INNER JOIN localidade AS lc ON lg.cd_localidade = lc.cd_localidade
+	ba.nm_bairro              AS nome_bairro,
+	COUNT(DISTINCT lg.nr_cep) AS qtd_ceps
+FROM localidade       AS lc
+INNER JOIN logradouro AS lg ON lc.cd_localidade = lg.cd_localidade
+INNER JOIN bairro     AS ba ON lg.cd_bairro_inicio = ba.cd_bairro
 WHERE lc.fl_tipo_localidade = "M" AND lc.sg_uf = "SC"
-GROUP BY lg.nm_logradouro
-ORDER BY COUNT(*) DESC
+GROUP BY ba.nm_bairro
+HAVING qtd_ceps > 1
+ORDER BY qtd_ceps DESC
+
+-- i) OK
+
+WITH qry AS
+(
+	SELECT
+		lg.nm_logradouro AS nome_logradouro,
+		COUNT(*)         AS qtd_municipios
+	FROM logradouro       AS lg
+	INNER JOIN localidade AS lc ON lg.cd_localidade = lc.cd_localidade
+	WHERE lc.fl_tipo_localidade = "M" AND lc.sg_uf = "SC"
+	GROUP BY lg.nm_logradouro
+)
+
+SELECT * FROM qry
+WHERE qry.qtd_municipios = (SELECT MAX(qry.qtd_municipios) FROM qry)
 
 -- j) OK
 
@@ -107,17 +136,47 @@ WHERE fl_tipo_localidade = "M"
 GROUP BY nm_localidade
 HAVING COUNT(sg_uf) > 1
 
--- k)
+-- k) OK
 
+SELECT
+	ba.nm_bairro              AS nome_bairro,
+	COUNT(DISTINCT lg.nr_cep) AS qtd_ceps
+FROM bairro           AS ba
+INNER JOIN logradouro AS lg ON ba.cd_bairro = lg.cd_bairro_inicio
+INNER JOIN localidade AS lc ON lg.cd_localidade = lc.cd_localidade
+WHERE lc.fl_tipo_localidade = "M"
+	AND lc.nm_localidade = "Blumenau"
+	AND lc.sg_uf = "SC"
+GROUP BY ba.nm_bairro
 
+-- l) OK
 
--- l)
+SELECT
+	lg.nm_logradouro    AS nome_logradouro,
+	ba_inicio.nm_bairro AS nome_bairro_inicio,
+	ba_fim.nm_bairro    AS nome_bairro_fim
+FROM logradouro   AS lg
+INNER JOIN bairro AS ba_inicio ON lg.cd_bairro_inicio = ba_inicio.cd_bairro
+INNER JOIN bairro AS ba_fim    ON lg.cd_bairro_fim    = ba_fim.cd_bairro
+WHERE lg.cd_bairro_inicio != lg.cd_bairro_fim AND lg.sg_uf = "SC"
 
+-- m) OK
 
+WITH qry AS
+(
+	SELECT
+		ba.nm_bairro                     AS nome_bairro,
+		lc.nm_localidade                 AS nome_localidade,
+		lc.sg_uf                         AS uf,
+		COUNT(DISTINCT lg.cd_logradouro) AS qtd_logradouros
+	FROM bairro           AS ba
+	INNER JOIN logradouro AS lg ON ba.cd_bairro = lg.cd_bairro_inicio OR ba.cd_bairro = lg.cd_bairro_fim
+	INNER JOIN localidade AS lc ON lg.cd_localidade = lc.cd_localidade
+	GROUP BY ba.nm_bairro, lc.nm_localidade, lc.sg_uf
+)
 
--- m)
-
-
+SELECT * FROM qry
+WHERE qry.qtd_logradouros = (SELECT MAX(qry.qtd_logradouros) FROM qry)
 
 -- o)
 
