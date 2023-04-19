@@ -178,13 +178,84 @@ WITH qry AS
 SELECT * FROM qry
 WHERE qry.qtd_logradouros = (SELECT MAX(qry.qtd_logradouros) FROM qry)
 
--- o)
+-- o) OK
 
+CREATE OR REPLACE VIEW view_municipio_uf_qtd_bairros AS
+SELECT
+	lc.nm_localidade             AS nome_localidade,
+	lc.sg_uf                     AS uf,
+	COUNT(DISTINCT ba.cd_bairro) AS qtd_bairros
+FROM localidade      AS lc
+LEFT JOIN logradouro AS lg ON lc.cd_localidade = lg.cd_localidade
+LEFT JOIN bairro     AS ba ON lg.cd_bairro_inicio = ba.cd_bairro
+WHERE lc.fl_tipo_localidade = "M"
+GROUP BY lc.nm_localidade, lc.sg_uf
 
+SELECT * FROM view_municipio_uf_qtd_bairros
 
--- p)
+-- p) OK
 
+CREATE OR REPLACE VIEW view_uf_qtd_municipios AS
+SELECT
+	mqc.uf   AS uf,
+	COUNT(*) AS qtd_municipios
+FROM
+(
+	SELECT
+		lc.sg_uf                  AS uf,
+		lc.nm_localidade          AS nome_municipio,
+		COUNT(DISTINCT lg.nr_cep) AS qtd_ceps
+	FROM localidade       AS lc
+	INNER JOIN logradouro AS lg ON lc.cd_localidade = lg.cd_localidade
+	WHERE lc.fl_tipo_localidade = "M"
+	GROUP BY lc.nm_localidade
+)
+AS mqc
+WHERE mqc.qtd_ceps > 1
+GROUP BY mqc.uf
 
+SELECT * FROM view_uf_qtd_municipios
 
--- q)
+-- q) OK
 
+CREATE OR REPLACE VIEW view_ceps AS
+SELECT * FROM
+(
+	SELECT
+		lc.nr_cep        AS numero_cep,
+		lg.nm_logradouro AS nome_logradouro,
+		ba.nm_bairro     AS nome_bairro,
+		lc.nm_localidade AS nome_localidade,
+		lc.sg_uf         AS uf
+	FROM localidade      AS lc
+	LEFT JOIN logradouro AS lg ON lc.cd_localidade = lg.cd_localidade
+	LEFT JOIN bairro     AS ba ON lg.cd_bairro_inicio = ba.cd_bairro
+	
+	UNION
+	
+	SELECT
+		lg.nr_cep        AS numero_cep,
+		lg.nm_logradouro AS nome_logradouro,
+		ba.nm_bairro     AS nome_bairro,
+		lc.nm_localidade AS nome_localidade,
+		lg.sg_uf         AS uf
+	FROM logradouro      AS lg
+	LEFT JOIN localidade AS lc ON lg.cd_localidade = lc.cd_localidade
+	LEFT JOIN bairro     AS ba ON lg.cd_bairro_inicio = ba.cd_bairro
+	
+	UNION
+	
+	SELECT
+		gu.nr_cep        AS numero_cep,
+		lg.nm_logradouro AS nome_logradouro,
+		ba.nm_bairro     AS nome_bairro,
+		lc.nm_localidade AS nome_localidade,
+		gu.sg_uf         AS uf
+	FROM grande_usuario  AS gu
+	LEFT JOIN localidade AS lc ON gu.cd_localidade = lc.cd_localidade
+	LEFT JOIN logradouro AS lg ON gu.cd_logradouro = lg.cd_logradouro
+	LEFT JOIN bairro     AS ba ON gu.cd_bairro = ba.cd_bairro
+) AS qry
+WHERE qry.numero_cep IS NOT NULL
+
+SELECT * FROM view_ceps
