@@ -10,21 +10,15 @@ CREATE OR REPLACE ROLE 'Atendente Geral';
 
 -- 2) OK
 
--- gerente
+-- Gerente
 GRANT ALL PRIVILEGES ON db_avaliacao2.* TO 'Gerente' WITH GRANT OPTION;
 
--- recepcionista
+-- Recepcionista
 GRANT ALL PRIVILEGES ON db_avaliacao2.cliente    TO 'Recepcionista';
 GRANT ALL PRIVILEGES ON db_avaliacao2.reserva    TO 'Recepcionista';
 GRANT ALL PRIVILEGES ON db_avaliacao2.hospedagem TO 'Recepcionista';
 
--- atendente_geral - sem view
-GRANT SELECT (`NM_CLIENTE`) ON db_avaliacao2.cliente    TO 'Atendente Geral';
-GRANT SELECT (`NR_QUARTO`)  ON db_avaliacao2.hospedagem TO 'Atendente Geral';
-
-GRANT INSERT, UPDATE ON db_avaliacao2.hospedagem_servico TO 'Atendente Geral';
-
--- atendente_geral - com view
+-- Atendente Geral
 CREATE OR REPLACE VIEW db_avaliacao2.view_cliente_hospedagem AS
 SELECT
 	c.NM_CLIENTE,
@@ -32,7 +26,8 @@ SELECT
 FROM db_avaliacao2.hospedagem    AS h
 INNER JOIN db_avaliacao2.cliente AS c ON h.CD_CLIENTE = c.CD_CLIENTE;
 
-GRANT SELECT ON db_avaliacao2.view_cliente_hospedagem TO 'Atendente Geral';
+GRANT SELECT ON db_avaliacao2.view_cliente_hospedagem    TO 'Atendente Geral';
+GRANT INSERT, UPDATE ON db_avaliacao2.hospedagem_servico TO 'Atendente Geral';
 
 -- 3) OK
 
