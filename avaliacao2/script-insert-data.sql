@@ -28,7 +28,8 @@ INSERT INTO funcionario (CD_FUNCIONARIO, CD_CARGO, NM_FUNCIONARIO) VALUES
 (1, 1, 'João Gerente Fonseca'),
 (2, 2, 'Maria Recepcionista da Silva'),
 (3, 3, 'Carlos Atendente Geral Costa'),
-(4, 4, 'Luiza Estagiária Souza');
+(4, 4, 'Luiza Estagiária Souza')
+(5, 1, 'Gustavo Baroni Bruder');
 
 INSERT INTO quarto (NR_QUARTO, CD_CATEGORIA, DS_QUARTO, NR_OCUPANTES) VALUES
 (101, 1, 'Corredor amarelo, face norte', 1),
@@ -54,3 +55,6 @@ INSERT INTO servico (CD_SERVICO, DS_SERVICO) VALUES
 (3, 'Lavanderia'),
 (4, 'Translado'),
 (5, 'Lan house');
+
+INSERT INTO hospedagem (CD_HOSPEDAGEM, DT_ENTRADA, DT_SAIDA, FL_SITUACAO, CD_CLIENTE, CD_FUNCIONARIO, NR_QUARTO) VALUES
+(1, '2023-05-16', '2023-05-16', 'A', 1, 1, 101);

@@ -27,7 +27,7 @@ FROM db_avaliacao2.hospedagem    AS h
 INNER JOIN db_avaliacao2.cliente AS c ON h.CD_CLIENTE = c.CD_CLIENTE;
 
 GRANT SELECT ON db_avaliacao2.view_cliente_hospedagem    TO 'Atendente Geral';
-GRANT INSERT, UPDATE ON db_avaliacao2.hospedagem_servico TO 'Atendente Geral';
+GRANT SELECT, INSERT, UPDATE ON db_avaliacao2.hospedagem_servico TO 'Atendente Geral';
 
 -- 3) OK
 
