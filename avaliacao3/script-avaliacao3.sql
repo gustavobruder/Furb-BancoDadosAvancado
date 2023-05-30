@@ -52,12 +52,12 @@ DELIMITER $$
 CREATE OR REPLACE PROCEDURE pcd_listar_disponibilidade_quartos (IN dt_disponibilidade DATE)
 BEGIN
 	SELECT
-		q.NR_QUARTO
+		q.nr_quarto
 	FROM quarto AS q
-	LEFT JOIN reserva AS r ON q.NR_QUARTO = r.NR_QUARTO
-	WHERE r.NR_QUARTO IS NULL
-		OR dt_disponibilidade NOT BETWEEN r.DT_ENTRADA AND ADDDATE(r.DT_ENTRADA, r.QT_DIARIAS - 1)
-	ORDER BY q.NR_QUARTO ASC;
+	LEFT JOIN reserva AS r ON q.nr_quarto = r.nr_quarto
+	WHERE r.nr_quarto IS NULL
+		OR dt_disponibilidade NOT BETWEEN r.dt_entrada AND ADDDATE(r.dt_entrada, r.qt_diarias - 1)
+	ORDER BY q.nr_quarto ASC;
 END $$
 
 CALL pcd_listar_disponibilidade_quartos('2023-05-01');
